@@ -227,3 +227,28 @@ Could not resolve all files for configuration ':compileClasspath'.
 - 하나의 카테고리에는 여러개의 카테고리아이템이 있을 수 있다
 - 따라서 category_item 테이블이 category를 fk로 갖는다
 - category fk가 연관관계의 주인이 된다
+-----------------------------------------------------------------
+
+# 엔티티 상속 관계
+## @Inheritance
+- 상속관계를 표현하기 위해 @Inheritance 어노테이션을 사용한다
+- `@Inheritance(strategy = InheritanceType.*SINGLE_TABLE*)` 하면 모든 자식 엔티티가 하나의 테이블로 합쳐져서 생성 된다
+- 하나의 테이블에 자식 엔티티의 모든 컬럼이 들어있기 때문에 조회시 성능면에서 유리하다
+- 단 , 단점은 자식 엔티티의 모든 컬럼은 null을 허용해야 한다
+- 단일 테이블이 커지는 경우 조회 성능이 저하될 수 있다
+- 하나의 테이블에 Book , Albun , Movie 엔티티에 있는 컬럼이 전부 들어간다
+- 모든 컬럼은 null을 허용해야 한다
+
+## @DiscriminatorColumn
+- `@DiscriminatorColumn(name = "dtype")`
+- 부모 클래스에 선언한다
+- 하위 클래스를 구분하기 위해 사용한다
+- default 는 DTYPE이다
+- 상속관계 매핑시 SINGLE_TABLE 인 경우 모든 자식 엔티티의 컬럼이 한테이블에 모아진다
+- 그러면 어떤 자식인지 구분하기 위해 DTYPE을 사용한다
+- 즉 서브 엔티티를 구분하고 명시하기 위해 사용한다
+- SINGLE_TABLE 전략의 경우 무조건 DTYPE 칼럼이 생긴다
+
+## @DiscriminatorValue
+- `@DiscriminatorValue("M")`
+- 예) Movie 엔티티에 해당하는 컬럼에 데이터가 저장되는 경우 해당 데이터가 Movie 엔티티 소속 이라는 것을 구분하기 위해 DTYPE  컬럼에 A가 저장된다
