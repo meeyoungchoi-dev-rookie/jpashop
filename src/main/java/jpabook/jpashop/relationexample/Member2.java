@@ -3,7 +3,7 @@ package jpabook.jpashop.relationexample;
 import javax.persistence.*;
 
 @Entity
-public class Member {
+public class Member2 {
     @Id
     @GeneratedValue
     private Long member_id;
