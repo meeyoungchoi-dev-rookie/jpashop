@@ -467,3 +467,117 @@ public enum OrderStatus {
     ORDER , CANCEL
 }
 ```
+
+## Category와 Item 사이 관계
+- 여러개의 Category에는 여러개의 Item이 속할 수 있다
+- 여러개의 Item이 여러개의 Category에 속할 수 있다
+- 다 : 다 관계이다
+
+- 엔티티 사이에 중간 테이블을 둬서 1 : 다 와 다 : 1 관계로 분리한다
+- Category 엔티티와 Item 엔티티사이에 category_item 이라는 테이블을 만든다
+- 해당 테이블을 각 엔티티의 FK 만을 관리한다
+- 단점
+- - 관리해야 하는 테이블이 늘어난다
+- - 테이블에 컬럼을 추가할 수 없다
+
+```java
+@ManyToMany
+@JoinTable(name = "category_item", joinColumns = @JoinColumn(name = "category_id"), inverseJoinColumns = @JoinColumn(name = "item_id"))
+private List<Item> items = new ArrayList<>();
+```
+
+- Category 엔티티를 기준으로 조인시 참조할 FK가 category_id 컬럼이다
+- Item 엔티티를 기준으로 조인하기 위해 참조할 FK가 item_id 컬럼이다
+
+- @ManyToMany의 반대쪽
+- Item 엔티티 관점에서 Category 엔티티를 바라볼때
+- 관계의 주인은 Category 엔티티에 선언된 인스턴스 필드가 주인이 된다
+- 따라서 mappedBy를 사용하여 items를 관계의 주인으로 설정해 준다
+
+```java
+@Entity
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "dtype")
+@Getter
+@Setter
+public abstract class Item {
+
+    ...
+
+    @ManyToMany(mappedBy = "items")
+    private List<Category> categories = new ArrayList<>();
+}
+```
+
+- 카테고리 엔티티의 계층관계 표현
+- 여러개의 Category가 하나의 부모 카테고리에 속할 수 있다
+- 하나의 Category가 여러개의 자식 카테고리를 가질 수 있다
+
+```java
+@ManyToOne
+@JoinColumn(name = "parent_id")
+private Category parent;
+
+@OneToMany(mappedBy = "parent")
+private List<Category> child = new ArrayList<>();
+```
+
+## 엔티티 설계시 주의할 점
+- 엔티티에서 setter 메서드를 쓰면 좋지 않다
+- ArrayList 객체는 필드에서 초기화 해주고 한번 생성되면 변경하지 않는다
+
+### EAGER 와 LAZY
+
+- 모든 연관관계는 다 지연로딩을 설정한다
+- @ManyToOne 매핑관계에서 default가 EAGER이다
+- 조회시 N + 1 문제가 발생할 수 있다
+
+
+### CASCADE
+
+- 엔티티의 상태 변화를 전파시킨다
+- 엔티티의 변화가 발생하면 연관되어 있는 엔티티에도 상태변화를 반영해 준다
+- default는 전이 시키지 않는것이다
+
+```java
+@OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+private List<OrderItem> orderItems = new ArrayList<>();
+
+@OneToOne(fetch = FetchType.LAZY , cascade = CascadeType.ALL)
+@JoinColumn(name = "delivery_id")
+private Delivery delivery;
+```
+
+- order 엔티티에 데이터 변경이 일어나면 연관된 OrderItems와 delivery 엔티티에도 Order 엔티티의 상태 변화를 반영해 준다
+
+
+### 연관관계 편의 메서드
+
+- 하나의 메서드를 통해 서로 관계가 있는 객체를 설정해 준다
+
+```java
+public class Order {
+    ...
+
+    @ManyToOne
+    @JoinColumn(name = "member_id")
+    private Member member;
+
+   ...
+
+    public void setMember(Member member) {
+        this.member = member;
+        member.getOrders().add(this);
+    }
+}
+```
+
+- Order와 Member가 서로 양방향 관계이다
+- setMember 메서드를 통해 물리적 양방향 관계를 설정해 준다
+- 한명의 회원이 주문을 여러개 생성할 수 있으므로 회원이 주문을 할때마다
+- Order 객체를 `orders` ArrayList에 담아준다
+- 어노테이션을 통해 테이블을 기준으로 객체를 매핑시켜 줬다면
+- 실제 물리적으로 객체끼리 연관관계를 맺어준다
+- 순수한 객체 상태에서도 정상적으로 연관관계를 동작시키기 위해 사용한다
+- 따라서 하나의 메서드 안에서 객체의 연관관계를 맺어준다
+- 메서드의 위치는 양방향관계에서 주인쪽에 둔다
