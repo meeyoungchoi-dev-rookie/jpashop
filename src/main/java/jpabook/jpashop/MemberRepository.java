@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-@Repository
+
 public class MemberRepository {
     // 스프링 부트가 EntityManager를 의존관계 주입해 준다
     @PersistenceContext
