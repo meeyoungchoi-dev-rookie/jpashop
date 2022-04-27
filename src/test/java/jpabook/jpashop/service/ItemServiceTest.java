@@ -2,8 +2,10 @@ package jpabook.jpashop.service;
 
 import jpabook.jpashop.domain.item.Book;
 
+import jpabook.jpashop.domain.item.Item;
 import jpabook.jpashop.domain.item.Movie;
 import jpabook.jpashop.repository.ItemRepository;
+
 
 
 import org.junit.jupiter.api.Test;
@@ -14,6 +16,7 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 @SpringBootTest
@@ -36,12 +39,22 @@ class ItemServiceTest {
         Book book  = new Book();
         book.setAuthor("authorA");
         book.setIsbn("1111");
+        book.setStockQuantity(100);
+        book.setName("bookA");
         // when
         Long itemId = itemService.saveItem(book);
         System.out.println("itemId: " + itemId);
 
         // then
-        assertThat(itemId).isEqualTo(itemRepository.findOne(itemId).getId());
+        assertThat(itemId).isSameAs(itemRepository.findOne(itemId).getId());
+
+        Book findedBook = (Book) itemRepository.findOne(itemId);
+        System.out.println(findedBook.toString());
+
+        System.out.println("이름 비교: " + book.getName().equals(findedBook.getName()));
+        System.out.println("결과: " + book.equals(findedBook));
+        boolean status = book.equals(findedBook);
+        assertTrue(status);
     }
 
 
