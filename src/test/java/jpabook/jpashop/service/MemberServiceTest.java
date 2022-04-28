@@ -3,7 +3,7 @@ package jpabook.jpashop.service;
 import jpabook.jpashop.domain.Member;
 import jpabook.jpashop.repository.MemberRepository;
 
-import org.junit.jupiter.api.Assertions;
+
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -43,6 +44,7 @@ class MemberServiceTest {
         // then
 //        em.flush(); // db에 insert 날리고 실제 트랜잭션은 롤백 시킨다
         assertEquals(member, memberRepository.findOne(memberId));
+        assertThat(member).isSameAs(memberRepository.findOne(memberId));
 
     }
 
