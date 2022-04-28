@@ -36,9 +36,7 @@ class ItemServiceTest {
     public void 상품등록() {
 
         // given
-        Book book  = new Book();
-        book.setAuthor("authorA");
-        book.setIsbn("1111");
+        Item book  = new Book();
         book.setStockQuantity(100);
         book.setName("bookA");
         // when
@@ -47,14 +45,13 @@ class ItemServiceTest {
 
         // then
         assertThat(itemId).isSameAs(itemRepository.findOne(itemId).getId());
+        assertThat(book).isEqualTo(itemRepository.findOne(itemId));
 
-        Book findedBook = (Book) itemRepository.findOne(itemId);
-        System.out.println(findedBook.toString());
+        Item getBook =  itemRepository.findOne(itemId);
+        System.out.println(getBook.toString());
 
-        System.out.println("이름 비교: " + book.getName().equals(findedBook.getName()));
-        System.out.println("결과: " + book.equals(findedBook));
-        boolean status = book.equals(findedBook);
-        assertTrue(status);
+        System.out.println("이름 비교: " + book.getName().equals(getBook.getName()));
+        System.out.println("결과: " + book.equals(getBook));
     }
 
 
