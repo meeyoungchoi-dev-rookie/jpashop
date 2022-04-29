@@ -20,6 +20,7 @@ public class ItemRepository {
             entityManager.persist(item);
         } else {
             entityManager.merge(item);
+            // JPA가 자동으로 db에서 row를 찾아 파라미터로 전달된 item으로 바꿔치기 해준다
         }
     }
 

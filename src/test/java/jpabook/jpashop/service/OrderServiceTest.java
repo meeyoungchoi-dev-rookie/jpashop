@@ -6,9 +6,8 @@ import jpabook.jpashop.domain.Order;
 import jpabook.jpashop.domain.OrderStatus;
 import jpabook.jpashop.domain.item.Book;
 import jpabook.jpashop.domain.item.Item;
-import jpabook.jpashop.repository.MemberRepository;
+import jpabook.jpashop.exception.NotEnoughStockException;
 import jpabook.jpashop.repository.OrderRepository;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,10 +65,54 @@ class OrderServiceTest {
 
     }
 
+    @Test
+    public void 상품주문_재고수량_초과() throws Exception {
+
+        // given
+        Member member = new Member();
+        member.setName("회원1");
+        member.setAddress(new Address("서울", "강가", "123-123"));
+        Long memberId = memberService.join(member);
+
+        Item book = new Book();
+        book.setName("시골 JPA");
+        book.setPrice(10000);
+        book.setStockQuantity(10);
+        em.persist(book);
+
+        int orderCount = 11;
+
+        NotEnoughStockException exception  = assertThrows(NotEnoughStockException.class, () -> {
+            orderService.order(memberId, book.getId(), orderCount);
+        });
+
+        assertEquals("need more stock", exception.getMessage());
+    }
+
+
 
     @Test
     public void 주문취소() throws Exception {
+        Member member = new Member();
+        member.setName("회원1");
+        member.setAddress(new Address("서울", "강가", "123-123"));
+        Long memberId = memberService.join(member);
 
+        Item book = new Book();
+        book.setName("시골 JPA");
+        book.setPrice(10000);
+        book.setStockQuantity(10);
+        em.persist(book);
+
+        int orderCount = 2;
+
+        Long orderId = orderService.order(member.getId(), book.getId(), orderCount);
+
+        orderService.cancelOrder(orderId);
+
+        Order getOrder = orderRepository.findOne(orderId);
+        assertEquals( OrderStatus.CANCEL, getOrder.getStatus());
+        assertEquals(10 , book.getStockQuantity());
     }
 
     @Test
